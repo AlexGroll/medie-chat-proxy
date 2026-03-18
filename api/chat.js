@@ -9,12 +9,12 @@ export default async function handler(req, res) {
   const { message, sessionId } = req.body;
 
   if (!message || !sessionId) {
-    return res.status(400).json({ error: "message e sessionId sono obbligatori" });
+    return res.status(400).json({ error: "message e sessionId são obrigatórios" });
   }
 
   try {
     const response = await fetch(
-      `${process.env.GPTMAKER_API_URL}/agent/${process.env.GPTMAKER_BOT_ID}/conversation`,
+      `https://api.gptmaker.ai/v2/agent/${process.env.GPTMAKER_BOT_ID}/conversation`,
       {
         method: "POST",
         headers: {
@@ -22,15 +22,9 @@ export default async function handler(req, res) {
           Authorization: `Bearer ${process.env.GPTMAKER_API_KEY}`,
         },
         body: JSON.stringify({
-          message,
-          sessionId,
-          stream: false,
-          contact: {
-            name: "Visitante Site",
-            customFields: {
-              source: "medie-website",
-            },
-          },
+          prompt: message,
+          contextId: sessionId,
+          chatName: "Visitante Site",
         }),
       }
     );
@@ -43,7 +37,7 @@ export default async function handler(req, res) {
     }
 
     const data = await response.json();
-    const reply = data.reply || data.message || data.response || "Desculpe, não consegui processar sua mensagem.";
+    const reply = data.message || "Desculpe, não consegui processar sua mensagem.";
 
     return res.status(200).json({ reply });
   } catch (error) {
